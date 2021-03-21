@@ -1,0 +1,5 @@
+s3_bucket: yueda-bucket
+jupyter_notebook: report.ipynb
+jupyter_report_name: new_report.html
+report_format: html
+s3_report_dir: serverless-valuation/reports
