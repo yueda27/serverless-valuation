@@ -3,9 +3,72 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <style>
+        table {
+            border: 2px solid black;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            text-align: left;
+            font-size: 0.8vw;
+            padding: 15px;
+            border: 2px solid black;
+        }
+        h1 {
+            font-size: 5vw;
+            color: maroon
+        }
+        h3 {
+            font-size: 3vw;
+        }
+        #th-left {
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-    <h2>BETA</h2>
-     {{ stock_beta }}
+    <div>
+        <h1>{{ s.stock_code }} Valuation</h1>
+        <p>Created on: {{ timestamp }}</p>
+        <h2>Stock Info</h2>
+        <table style="border: black;">
+            <tr>
+                <th id="th-left">Exchange</th>
+                <td>{{ s.get_stock_exchange() }}</td>
+            </tr>
+            <tr>
+                <th id="th-left">Beta</th>
+                <td>{{ s.beta }}</td>
+            </tr>
+            <tr>
+                <th id="th-left">Growth Rate</th>
+                <td>{{ s.growth_rate() * 100}}%</td>
+            </tr>
+            <tr>
+                <th id="th-left">Dividend</th>
+                <td>${{ s.full_year_dividend() }}</td>
+            </tr>
+            <tr>
+                <th>Current Price</th>
+                <td>${{ s.get_current_price() }}</td>
+            </tr>
+        </table>
+    </div>
+
+<h3>Discounted Cash Flow</h3>
+<table >
+    <tr>
+        <th>Item</th>
+        <th>Value</th>
+    </tr>
+    {% for item in gordon_growth_fcf %}
+    <tr>
+        <td>{{ item[0] }}</td>
+        <td>{{ item[1] }}</td>
+    </tr>
+    {% endfor %}
+
+</table>
 </body>
 </html>

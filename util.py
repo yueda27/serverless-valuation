@@ -2,6 +2,8 @@ import os
 from boto3 import client
 import yaml
 from jinja2 import Environment, FileSystemLoader
+import logging
+
 
 def get_template(template_path):
     env = Environment(loader=FileSystemLoader('.'))
@@ -21,6 +23,7 @@ def upload_report_to_s3(file_name, bucket, object_name=None):
         response = s3_client.upload_file(file_name, bucket, object_name)
     except:
         print("ERROR UPLOADING!")
+    logging.debug(f"Uploaded {file_name} to S3://{bucket}/{object_name}")
 
 def load_configuration(path):
     with open(path) as config_file:
