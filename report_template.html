@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <style>
+        br {
+            width: 100%;
+        }
+        #container {
+            width: 100%;
+            background-color: cornflowerblue;
+        }
+        #info-table {
+            width: 40%;
+            float: left;
+        }
         table {
             border: 2px solid black;
             border-collapse: collapse;
@@ -15,46 +26,83 @@
             padding: 15px;
             border: 2px solid black;
         }
+        h1,h2, h3 {
+            width: 100%;
+        }
         h1 {
             font-size: 5vw;
-            color: maroon
+            color: #f1e3dd; 
         }
         h3 {
+            text-align: left;
+            float: left;
             font-size: 3vw;
         }
         #th-left {
             text-align: left;
+        }
+        #valuation-tr {
+            background-color:  #bccad6;
         }
     </style>
 </head>
 <body>
     <div>
         <h1>{{ s.stock_code }} Valuation</h1>
+        <h3>{{ s.get_stock_quote_type_data().get(s.stock_code).get("longName") }}</h3>
         <p>Created on: {{ timestamp }}</p>
         <h2>Stock Info</h2>
-        <table style="border: black;">
+    </div>
+
+    <div class="container">
+        <table id="info-table">
             <tr>
-                <th id="th-left">Exchange</th>
-                <td>{{ s.get_stock_exchange() }}</td>
-            </tr>
-            <tr>
-                <th id="th-left">Beta</th>
+                <th>Beta</th>
                 <td>{{ s.beta }}</td>
             </tr>
             <tr>
-                <th id="th-left">Growth Rate</th>
+                <th>Growth Rate</th>
                 <td>{{ s.growth_rate() * 100}}%</td>
             </tr>
             <tr>
-                <th id="th-left">Dividend</th>
+                <th>Dividend</th>
                 <td>${{ s.full_year_dividend() }}</td>
+            </tr>
+            <tr>
+                <th>Sharpe Ratio</th>
+                <td>{{ greeks.get("sharpe") }}</td>
             </tr>
             <tr>
                 <th>Current Price</th>
                 <td>${{ s.get_current_price() }}</td>
             </tr>
         </table>
+
+        <table id="info-table">
+            <tr>
+                <th id="th-left">Exchange</th>
+                <td>{{ s.get_stock_exchange() }}</td>
+            </tr>
+            <tr>
+                <th id="th-left">Market Annualised Return</th>
+                <td>{{ market_ann_return }}%</td>
+            </tr>
+            <tr>
+                <th id="th-left">Benchmark Period</th>
+                <td>{{ benchmark_year }} year</td>
+            </tr>
+            <tr>
+                <th id="th-left">Risk Free Spot Yield</th>
+                <td>{{ spot_yield }}%</td>
+            </tr>
+            <tr>
+                <th>CAPM Req Rate of Return</th>
+                <td>{{ req_rate }}%</td>
+            </tr>
+        </table>
     </div>
+<br>
+<hr>
 
 <h3>Single Stage Gordon Growth</h3>
 <table >
@@ -62,13 +110,18 @@
         <th>Item</th>
         <th>Value</th>
     </tr>
-    {% for item in gordon_growth %}
+    {% for item in gordon_growth[:-1] %}
     <tr>
         <td>{{ item[0] }}</td>
         <td>{{ item[1] }}</td>
     </tr>
     {% endfor %}
-
+    <tr id="valuation-tr">
+        <td>{{ gordon_growth[-1][0] }}</td>
+        <td style="color: #667292;"><b>{{ gordon_growth[-1][1] }}</b></td>
+    </tr>
 </table>
+<hr>
+
 </body>
 </html>
