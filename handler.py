@@ -8,7 +8,7 @@ import util
 import logging
 from datetime import datetime
 
-def gordon_growth_fcf(stock, req_return):
+def gordon_growth(stock, req_return):
     if req_return < 0:
         req_return = 0.05
         logging.info("Required Rate Of Return Negative. Defaulting to 0.05")
@@ -41,12 +41,12 @@ if __name__ == "__main__":
     market = Market(s.get_stock_exchange())
     req_rate = CAPM(rf.spot_yield, market.get_annualised_return(rf.year), s.beta)
 
-    gg_fcf_result = gordon_growth_fcf(s, req_rate)
+    gg_result = gordon_growth(s, req_rate)
 
     report_name = f"{s.stock_code}-report.html"
     
     template = util.get_template("report_template.html")
-    template_vars = {"gordon_growth_fcf": gg_fcf_result, "timestamp": datetime.now().strftime("%Y:%m:%d")}
+    template_vars = {"gordon_growth": gg_result, "timestamp": datetime.now().strftime("%Y:%m:%d")}
 
     html_out = template.render(template_vars, s = s)
     logging.debug("Generated report file")
