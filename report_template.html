@@ -7,9 +7,12 @@
         br {
             width: 100%;
         }
+        #subheader{
+            text-align: center;
+            color: #bccad6;
+        }
         #container {
             width: 100%;
-            background-color: cornflowerblue;
         }
         #info-table {
             width: 40%;
@@ -18,7 +21,7 @@
         table {
             border: 2px solid black;
             border-collapse: collapse;
-            width: 100%;
+            width: 80%;
         }
         th, td {
             text-align: left;
@@ -26,7 +29,7 @@
             padding: 15px;
             border: 2px solid black;
         }
-        h1,h2, h3 {
+        h1,h2, h3, h4 {
             width: 100%;
         }
         h1 {
@@ -37,6 +40,11 @@
             text-align: left;
             float: left;
             font-size: 3vw;
+        }
+        h4 {
+            text-align: left;
+            float: left;
+            font-size:  1.5vw;
         }
         #th-left {
             text-align: left;
@@ -102,26 +110,139 @@
         </table>
     </div>
 <br>
+
+<div>
+    <h3>Single Stage Gordon Growth</h3>
+    <div>
+        <h4>Normal Scenario</h4>
+        <table >
+            <tr>
+                <th>Item</th>
+                <th>Value</th>
+            </tr>
+            {% for item in gordon_growth["normal"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ gordon_growth["normal"][-1][0] }}</td>
+                <td style="color: #667292;"><b>{{ gordon_growth["normal"][-1][1] }}</b></td>
+            </tr>
+        </table>
+    </div>
+
+    <div>
+        <h4>Conservative Scenario</h4>
+        <table >
+            <tr>
+                <th>Item</th>
+                <th>Value</th>
+            </tr>
+            {% for item in gordon_growth["conservative"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ gordon_growth["conservative"][-1][0] }}</td>
+                <td style="color: #667292;"><b>{{ gordon_growth["conservative"][-1][1] }}</b></td>
+            </tr>
+        </table>
+    </div>
+
+    <div>
+    <h4>Optimistic Scenario</h4>
+    <table >
+        <tr>
+            <th>Item</th>
+            <th>Value</th>
+        </tr>
+        {% for item in gordon_growth["optimistic"][:-1] %}
+        <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+        </tr>
+        {% endfor %}
+        <tr id="valuation-tr">
+            <td>{{ gordon_growth["optimistic"][-1][0] }}</td>
+            <td style="color: #667292;"><b>${{ gordon_growth["optimistic"][-1][1] }}</b></td>
+        </tr>
+    </table>
+</div>
+
 <hr>
 
-<h3>Single Stage Gordon Growth</h3>
-<table >
-    <tr>
-        <th>Item</th>
-        <th>Value</th>
-    </tr>
-    {% for item in gordon_growth[:-1] %}
-    <tr>
-        <td>{{ item[0] }}</td>
-        <td>{{ item[1] }}</td>
-    </tr>
-    {% endfor %}
-    <tr id="valuation-tr">
-        <td>{{ gordon_growth[-1][0] }}</td>
-        <td style="color: #667292;"><b>{{ gordon_growth[-1][1] }}</b></td>
-    </tr>
-</table>
-<hr>
+</div>
+    <h3>Free Cash Flow Valuation</h3>
+    <div>
+        <table>
+            <tr>
+                <th>No. of Outstanding Shares</th>
+                <td>{{ "{:,.2f}".format(fcf_growth.get("no_shares")) }}</td>
+            </tr>
+            <tr>
+                <th>Required Rate of Return</th>
+                <td>{{ fcf_growth.get("req_rate") }}%</td>
+            </tr>
+            <tr>
+                <th colspan="2" id="subheader">Free Cash Flow History</th>
+            </tr>
+                {% for year, fcf in fcf_growth.get("fcf_history").items() %}
+                <tr>
+                    <th>{{ year }}</th>
+                    <td>{{ "${:,.2f}".format(fcf) }}</td>
+                </tr>
+                {% endfor %}
+            <tr>
+                <th colspan="2" id="subheader">Normal Scenario</th>
+            </tr>
+            {% for item in fcf_growth["normal"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ fcf_growth["normal"][-1][0] }}</td>
+                <td style="color: #667292;"><b>{{ fcf_growth["normal"][-1][1] }}</b></td>
+            </tr>
 
+            <tr>
+                <th colspan="2" id="subheader">Conservative Scenario</th>
+            </tr>
+            {% for item in fcf_growth["conservative"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ fcf_growth["conservative"][-1][0] }}</td>
+                <td style="color: #667292;"><b>{{ fcf_growth["conservative"][-1][1] }}</b></td>
+            </tr>
+
+            <tr>
+                <th colspan="2" id="subheader">Optimistic Scenario</th>
+            </tr>
+            {% for item in fcf_growth["optimistic"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ fcf_growth["optimistic"][-1][0] }}</td>
+                <td style="color: #667292;"><b>${{ fcf_growth["optimistic"][-1][1] }}</b></td>
+            </tr>
+        </table>
+    </div>
+
+<div>
+
+</div>
+<hr>
 </body>
 </html>

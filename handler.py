@@ -8,18 +8,52 @@ import util
 import logging
 from datetime import datetime
 
-def gordon_growth(stock, req_return):
+def gordon_growth(stock, req_return, growth_rate):
     if req_return < 0:
         req_return = 0.05
         logging.info("Required Rate Of Return Negative. Defaulting to 0.05")
     result = list()
-    result.append(("Required Rate Of Return", round(req_return, 3)))
-    growth_rate = stock.growth_rate()
-    result.append(("Growth Rate", round(growth_rate, 3)))
+    result.append(("Required Rate Of Return", f"{__convert_to_pct(req_return)}%"))
+    result.append(("Growth Rate", f"{__convert_to_pct(growth_rate)}%"))
     print(req_return)
     value = gordon_growth_valuation(stock.full_year_dividend(), req_return, growth_rate)
     result.append(("Valuation", value))
     return result
+
+def gordon_growth_range(s, req_rate):
+    result = dict()
+    growth_rate = s.growth_rate()
+    result["normal"] = gordon_growth(s, req_rate, growth_rate)
+    result["conservative"] = gordon_growth(s, req_rate, growth_rate * 0.5)
+    result["optimistic"] = gordon_growth(s, req_rate, growth_rate * 1.2)
+    return result
+
+def fcf_growth_range(s,req_rate):
+    logging.debug("Calculating FCF Growth")
+    result = dict()
+    result["req_rate"] =  __convert_to_pct(req_rate)
+    result["fcf_history"] = s.get_fcf_history()
+    no_shares = s.get_num_shares_outstanding()
+    result["no_shares"] = no_shares
+    result["normal"] = fcf_growth(s, req_rate, 0.1, no_shares)
+    result["optimistic"] =  fcf_growth(s, req_rate, 0.3, no_shares)
+    result["conservative"] =  fcf_growth(s, req_rate, 0.05, no_shares)
+    return result
+
+def fcf_growth(s, req_rate, factor, no_shares):
+    if req_rate < 0:
+        req_rate = 0.05
+    result = list()
+    fcf = s.get_fcf_history()
+    fcf_growth=s.fcf_growth_rate()*factor
+    result.append(("FCF Growth Rate", f"{__convert_to_pct(fcf_growth)}%"))
+    value = gordon_growth_valuation(__first_item_in_dict(fcf), req_rate, fcf_growth)
+    result.append(("Valuation", round(value/ no_shares, 3)))
+    return result
+
+def __first_item_in_dict(d):
+    return next(iter(d.values()))
+
 
 def get_greeks(s, market, rf):
     logging.debug("Calculating Greeks")
@@ -58,16 +92,24 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
     s = Stock("C31.SI")
     rf = RiskFree(10)
     market = Market(s.get_stock_exchange())
-    req_rate = CAPM(rf.spot_yield, market.get_annualised_return(rf.year), s.beta)
+    ann_market_return = market.get_annualised_return(rf.year)
+    if ann_market_return < 0:
+        market = Market("S&P")
+        logging.debug("Using S&P as market instead")
+        ann_market_return = market.get_annualised_return(rf.year)
+
+    req_rate = CAPM(rf.spot_yield, ann_market_return, s.beta)
     greeks = get_greeks(s, market, rf)
 
-    gg_result = gordon_growth(s, req_rate)
+    gg_result = gordon_growth_range(s, req_rate)
+    fcf_result = fcf_growth_range(s, req_rate)
 
     report_name = f"{s.stock_code}-report.html"
     
     template = util.get_template("report_template.html")
     template_vars = {"spot_yield": __convert_to_pct(rf.spot_yield), "market_ann_return": __convert_to_pct( market.get_annualised_return(rf.year)), "benchmark_year": rf.year, "req_rate": __convert_to_pct(req_rate),
-                    "greeks": greeks, "gordon_growth": gg_result, "timestamp": datetime.now().strftime("%Y:%m:%d")}
+                    "greeks": greeks, "gordon_growth": gg_result, "fcf_growth": fcf_result,
+                    "timestamp": datetime.now().strftime("%Y:%m:%d")}
 
     html_out = template.render(template_vars, s = s)
     logging.debug("Generated report file")
@@ -75,7 +117,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
     util.dump_report(html_out, f"/tmp/{report_name}")
     logging.debug("Created report file")
 
-    util.upload_report_to_s3("/tmp/" + report_name, s3_bucket, s3_report_dir + "/" + report_name)
+    #util.upload_report_to_s3("/tmp/" + report_name, s3_bucket, s3_report_dir + "/" + report_name)
 
 
 #TODO:
