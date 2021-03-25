@@ -229,9 +229,80 @@
         </table>
     </div>
 
-<div>
-
 </div>
+    <h3>Forward PE Valuation</h3>
+    <div>
+        <table>
+            <tr>
+                <th>Required Rate of Return</th>
+                <td>{{ forward_pe.get("req_rate") }}%</td>
+            </tr>
+            <tr>
+                <th>Growth Rate</th>
+                <td>{{ forward_pe.get("growth_rate") }}%</td>
+            </tr>
+            <tr>
+                <th>Trailing EPS</th>
+                <td>{{ forward_pe.get("eps") }}</td>
+            </tr>
+            <tr>
+                <th>Payout Ratio</th>
+                <td>{{ forward_pe.get("payout") }}</td>
+            </tr>
+            <tr>
+                <th colspan="2" id="subheader">Payout Ratio History</th>
+            </tr>
+                {% for year, ratio in forward_pe.get("ratio_hist").items() %}
+                <tr>
+                    <th>{{ year }}</th>
+                    <td>{{ ratio }}</td>
+                </tr>
+                {% endfor %}
+            <tr>
+                <th colspan="2" id="subheader">Normal Scenario</th>
+            </tr>
+            {% for item in forward_pe["normal"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ forward_pe["normal"][-1][0] }}</td>
+                <td style="color: #667292;"><b>${{ forward_pe["normal"][-1][1] }}</b></td>
+            </tr>
+
+            <tr>
+                <th colspan="2" id="subheader">Conservative Scenario</th>
+            </tr>
+            {% for item in forward_pe["conservative"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ forward_pe["conservative"][-1][0] }}</td>
+                <td style="color: #667292;"><b>${{ forward_pe["conservative"][-1][1] }}</b></td>
+            </tr>
+
+            <tr>
+                <th colspan="2" id="subheader">Optimistic Scenario</th>
+            </tr>
+            {% for item in forward_pe["optimistic"][:-1] %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+            <tr id="valuation-tr">
+                <td>{{ forward_pe["optimistic"][-1][0] }}</td>
+                <td style="color: #667292;"><b>${{ forward_pe["optimistic"][-1][1] }}</b></td>
+            </tr>
+        </table>
+    </div>
+
+<div>
 <hr>
 </body>
 </html>

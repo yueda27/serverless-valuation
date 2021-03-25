@@ -28,3 +28,6 @@ def upload_report_to_s3(file_name, bucket, object_name=None):
 def load_configuration(path):
     with open(path) as config_file:
         return yaml.full_load(config_file)
+        
+def convert_to_pct(val):
+    return round(val * 100, 3)
