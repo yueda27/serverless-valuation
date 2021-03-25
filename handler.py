@@ -8,12 +8,14 @@ import util
 import logging
 from datetime import datetime
 
-def gordon_growth(stock, req_return, growth_rate):
+def gordon_growth(stock, req_return, growth_rate, factor):
     if req_return < 0:
         req_return = 0.05
         logging.info("Required Rate Of Return Negative. Defaulting to 0.05")
     result = list()
     result.append(("Required Rate Of Return", f"{__convert_to_pct(req_return)}%"))
+    result.append(("Assumption", f"Using a factor of {factor} to scale growth rate of {__convert_to_pct(growth_rate)}%"))
+    growth_rate *= factor
     result.append(("Growth Rate", f"{__convert_to_pct(growth_rate)}%"))
     print(req_return)
     value = gordon_growth_valuation(stock.full_year_dividend(), req_return, growth_rate)
@@ -23,9 +25,9 @@ def gordon_growth(stock, req_return, growth_rate):
 def gordon_growth_range(s, req_rate):
     result = dict()
     growth_rate = s.growth_rate()
-    result["normal"] = gordon_growth(s, req_rate, growth_rate)
-    result["conservative"] = gordon_growth(s, req_rate, growth_rate * 0.5)
-    result["optimistic"] = gordon_growth(s, req_rate, growth_rate * 1.2)
+    result["normal"] = gordon_growth(s, req_rate, growth_rate, 1)
+    result["conservative"] = gordon_growth(s, req_rate, growth_rate, 0.5)
+    result["optimistic"] = gordon_growth(s, req_rate, growth_rate, 1.2)
     return result
 
 def fcf_growth_range(s,req_rate):
@@ -45,6 +47,7 @@ def fcf_growth(s, req_rate, factor, no_shares):
         req_rate = 0.05
     result = list()
     fcf = s.get_fcf_history()
+    result.append(("Assumption", f"Using a factor of {factor} to scale FCF growth rate of {__convert_to_pct(s.fcf_growth_rate())}%"))
     fcf_growth=s.fcf_growth_rate()*factor
     result.append(("FCF Growth Rate", f"{__convert_to_pct(fcf_growth)}%"))
     value = gordon_growth_valuation(__first_item_in_dict(fcf), req_rate, fcf_growth)

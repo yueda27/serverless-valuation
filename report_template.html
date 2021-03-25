@@ -10,6 +10,7 @@
         #subheader{
             text-align: center;
             color: #bccad6;
+            background-color: rgb(151, 146, 146);
         }
         #container {
             width: 100%;
@@ -114,67 +115,55 @@
 <div>
     <h3>Single Stage Gordon Growth</h3>
     <div>
-        <h4>Normal Scenario</h4>
         <table >
-            <tr>
-                <th>Item</th>
-                <th>Value</th>
-            </tr>
-            {% for item in gordon_growth["normal"][:-1] %}
-            <tr>
-                <td>{{ item[0] }}</td>
-                <td>{{ item[1] }}</td>
-            </tr>
-            {% endfor %}
-            <tr id="valuation-tr">
-                <td>{{ gordon_growth["normal"][-1][0] }}</td>
-                <td style="color: #667292;"><b>{{ gordon_growth["normal"][-1][1] }}</b></td>
-            </tr>
+            <div>
+                <tr>
+                    <th id="subheader" colspan="2">Normal Scenario</th>
+                </tr>
+                {% for item in gordon_growth["normal"][:-1] %}
+                <tr>
+                    <td>{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                </tr>
+                {% endfor %}
+                <tr id="valuation-tr">
+                    <td>{{ gordon_growth["normal"][-1][0] }}</td>
+                    <td style="color: #667292;"><b>${{ gordon_growth["normal"][-1][1] }}</b></td>
+                </tr>
+            </div>
+            <div>
+                <tr>
+                    <th id="subheader" colspan="2">Conservative Scenario Scenario</th>
+                </tr>
+                {% for item in gordon_growth["conservative"][:-1] %}
+                <tr>
+                    <td>{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                </tr>
+                {% endfor %}
+                <tr id="valuation-tr">
+                    <td>{{ gordon_growth["conservative"][-1][0] }}</td>
+                    <td style="color: #667292;"><b>${{ gordon_growth["conservative"][-1][1] }}</b></td>
+                </tr>
+            </div>
+            <div>
+                <tr>
+                    <th id="subheader" colspan="2">Optimistic Scenario Scenario</th>
+                </tr>
+                {% for item in gordon_growth["optimistic"][:-1] %}
+                <tr>
+                    <td>{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                </tr>
+                {% endfor %}
+                <tr id="valuation-tr">
+                    <td>{{ gordon_growth["optimistic"][-1][0] }}</td>
+                    <td style="color: #667292;"><b>${{ gordon_growth["optimistic"][-1][1] }}</b></td>
+                </tr>
+            </div>
         </table>
     </div>
-
-    <div>
-        <h4>Conservative Scenario</h4>
-        <table >
-            <tr>
-                <th>Item</th>
-                <th>Value</th>
-            </tr>
-            {% for item in gordon_growth["conservative"][:-1] %}
-            <tr>
-                <td>{{ item[0] }}</td>
-                <td>{{ item[1] }}</td>
-            </tr>
-            {% endfor %}
-            <tr id="valuation-tr">
-                <td>{{ gordon_growth["conservative"][-1][0] }}</td>
-                <td style="color: #667292;"><b>{{ gordon_growth["conservative"][-1][1] }}</b></td>
-            </tr>
-        </table>
-    </div>
-
-    <div>
-    <h4>Optimistic Scenario</h4>
-    <table >
-        <tr>
-            <th>Item</th>
-            <th>Value</th>
-        </tr>
-        {% for item in gordon_growth["optimistic"][:-1] %}
-        <tr>
-            <td>{{ item[0] }}</td>
-            <td>{{ item[1] }}</td>
-        </tr>
-        {% endfor %}
-        <tr id="valuation-tr">
-            <td>{{ gordon_growth["optimistic"][-1][0] }}</td>
-            <td style="color: #667292;"><b>${{ gordon_growth["optimistic"][-1][1] }}</b></td>
-        </tr>
-    </table>
-</div>
-
 <hr>
-
 </div>
     <h3>Free Cash Flow Valuation</h3>
     <div>
@@ -207,7 +196,7 @@
             {% endfor %}
             <tr id="valuation-tr">
                 <td>{{ fcf_growth["normal"][-1][0] }}</td>
-                <td style="color: #667292;"><b>{{ fcf_growth["normal"][-1][1] }}</b></td>
+                <td style="color: #667292;"><b>${{ fcf_growth["normal"][-1][1] }}</b></td>
             </tr>
 
             <tr>
@@ -221,7 +210,7 @@
             {% endfor %}
             <tr id="valuation-tr">
                 <td>{{ fcf_growth["conservative"][-1][0] }}</td>
-                <td style="color: #667292;"><b>{{ fcf_growth["conservative"][-1][1] }}</b></td>
+                <td style="color: #667292;"><b>${{ fcf_growth["conservative"][-1][1] }}</b></td>
             </tr>
 
             <tr>
