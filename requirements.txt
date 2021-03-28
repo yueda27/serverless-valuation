@@ -1,5 +1,6 @@
 quantifin
 boto3
+finnhub-python
 jupyter
 pyyaml
 jinja2

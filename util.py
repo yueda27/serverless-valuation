@@ -40,4 +40,5 @@ def login_finnhub(path):
         c.country() #Test API KEY validity
     except Exception as e:
         raise Exception(f"Failed to login to Finnhub: {str(e)}")
+    logging.info("Successfully logged into finnhub")
     return c
