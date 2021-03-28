@@ -1,0 +1,6 @@
+quantifin
+boto3
+jupyter
+pyyaml
+jinja2
+weasyprint
