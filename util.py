@@ -3,7 +3,7 @@ from boto3 import client
 import yaml
 from jinja2 import Environment, FileSystemLoader
 import logging
-
+from finnhub import Client
 
 def get_template(template_path):
     env = Environment(loader=FileSystemLoader('.'))
@@ -31,3 +31,13 @@ def load_configuration(path):
         
 def convert_to_pct(val):
     return round(val * 100, 3)
+
+def login_finnhub(path):
+    try:
+        with open(path) as f:
+            API_KEY = f.read()
+        c = Client(api_key= API_KEY)
+        c.country() #Test API KEY validity
+    except Exception as e:
+        raise Exception(f"Failed to login to Finnhub: {str(e)}")
+    return c

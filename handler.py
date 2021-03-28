@@ -20,9 +20,11 @@ if __name__ == "__main__":
     report_template = config.get("report_template")
     s3_bucket = config.get("s3_bucket")
     s3_report_dir = config.get("s3_report_dir")
+    finnhub_key_path = config.get("finnhub_key_path")
     logging.info(f"""Initialised application
 Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_report_dir} Report template: {report_template}""")
     
+    finnhub_client = util.login_finnhub(finnhub_key_path)
     s = Stock("LULU")
     rf = RiskFree(10)
     market = Market(s.get_stock_exchange())

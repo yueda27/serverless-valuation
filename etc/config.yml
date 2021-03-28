@@ -1,3 +1,4 @@
 s3_bucket: yueda-bucket
 report_template: report_template.html
 s3_report_dir: serverless-valuation/reports
+finnhub_key_path: etc/finnhub_key
