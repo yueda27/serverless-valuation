@@ -59,7 +59,7 @@ def rank_list_by_attr(table, attr, limit, max = True):
     result = create_heap(resp.get("Items"), attr, max)
     expression = ">" if max else "<"
 
-    while ("LastEvaluatedKey" in resp and resp.get("Count") >= 1):
+    while ("LastEvaluatedKey" in resp and resp.get("Count") > 0):
         last_eval = resp.get("LastEvaluatedKey")
         cutoff = heapq.nsmallest(1, result)[0].get(attr)
         print(f"QUERY: {attr} {expression} {cutoff}" )

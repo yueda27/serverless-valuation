@@ -28,8 +28,8 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
     finnhub_client = util.login_finnhub(finnhub_key_path)
     db = util.login_db(db_table_name)
 
-    stocks = util.rank_list_by_attr(db, "beta", 10, False)
-    
+    stocks = util.rank_list_by_attr(db, "beta", 10, True)
+
     s = Stock("LULU")
     rf = RiskFree(10)
     market = Market(s.get_stock_exchange())
