@@ -10,7 +10,7 @@ from datetime import datetime
 from calculations import *
 
 if __name__ == "__main__":
-    logging.basicConfig(level = logging.DEBUG )
+    logging.basicConfig(level = logging.INFO )
     try:
         config_path = sys.argv[1]
     except IndexError as e:
@@ -21,10 +21,15 @@ if __name__ == "__main__":
     s3_bucket = config.get("s3_bucket")
     s3_report_dir = config.get("s3_report_dir")
     finnhub_key_path = config.get("finnhub_key_path")
+    db_table_name = config.get("dynamo_table_name")
     logging.info(f"""Initialised application
-Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_report_dir} Report template: {report_template}""")
+Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_report_dir} Report template: {report_template} Database Table: {db_table_name}""")
     
     finnhub_client = util.login_finnhub(finnhub_key_path)
+    db = util.login_db(db_table_name)
+
+    stocks = util.rank_list_by_attr(db, "beta", 10, False)
+    
     s = Stock("LULU")
     rf = RiskFree(10)
     market = Market(s.get_stock_exchange())
