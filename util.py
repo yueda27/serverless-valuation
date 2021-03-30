@@ -55,17 +55,35 @@ def login_db(table_name):
     return table
 
 def rank_list_by_attr(table, attr, limit, max = True):
-    resp = table.scan(Limit = limit)
-    result = create_heap(resp.get("Items"), attr, max)
+    result, resp = initialise_query_result(table, limit)
+    result = create_heap(result, attr, max)
     expression = ">" if max else "<"
 
     while ("LastEvaluatedKey" in resp and resp.get("Count") > 0):
-        last_eval = resp.get("LastEvaluatedKey")
         cutoff = heapq.nsmallest(1, result)[0].get(attr)
-        print(f"QUERY: {attr} {expression} {cutoff}" )
-        resp = table.scan(FilterExpression = f"#attr {expression} :limit", ExpressionAttributeValues = {":limit" : cutoff}, ExpressionAttributeNames={"#attr": attr}, ExclusiveStartKey = last_eval)
+        filter_exp =  f"#attr {expression} :cutoff AND #exchange <> :otc AND #exchange <> :na AND #exchange <> :true"
+        attr_value = {":otc": "Other OTC", ":na" : "N/A", ":true" : True, ":cutoff" : cutoff}
+        attr_name = {"#exchange" : "exchange", "#attr": attr}
+        last_eval = resp.get("LastEvaluatedKey")
+
+        logging.debug(f"QUERY to DynamoDB: {attr} {expression} {cutoff}" )
+        resp = table.scan(FilterExpression = filter_exp, ExpressionAttributeValues= attr_value, ExpressionAttributeNames = attr_name, ExclusiveStartKey = last_eval)
         result = update_heap(result, resp["Items"], attr, max)
     return result
+
+def initialise_query_result(table, limit):
+    result = []
+    resp = None
+    filter_exp =  "#exchange <> :otc AND #exchange <> :na AND #exchange <> :true"
+    attr_value = {":otc": "Other OTC", ":na" : None, ":true" : True}
+    attr_name = {"#exchange" : "exchange"}
+    while len(result) != limit:
+        if resp is None:
+            resp = table.scan(Limit = limit, FilterExpression =filter_exp, ExpressionAttributeValues = attr_value, ExpressionAttributeNames = attr_name)
+        elif "LastEvaluatedKey" in resp:
+            resp = table.scan(Limit = limit, FilterExpression = filter_exp, ExpressionAttributeValues = attr_value, ExpressionAttributeNames = attr_name, ExclusiveStartKey = resp.get("LastEvaluatedKey"))
+        result.extend(resp.get("Items")[: limit - len(result)])
+    return result, resp
         
 
 def create_heap(iterable, attr, max):
