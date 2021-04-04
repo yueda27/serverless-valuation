@@ -12,11 +12,13 @@ from calculations import *
 def get_correct_market(s,years):
     try:
         market = Market(s.get_stock_exchange())
+        ann_market_return = market.get_annualised_return(years)
     except (AttributeError,KeyError) as e:
         logging.error(f"Caught invalid market {s.get_stock_exchange()}")
         market = Market("S&P")
         return market
-    ann_market_return = market.get_annualised_return(years)
+    except (TypeError) as e:
+        raise Exception("Unable to get price return. Skipping")
     if ann_market_return < 0:
         market = Market("S&P")
         logging.debug("Using S&P as market instead")
@@ -48,6 +50,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
     for stock in stocks:
         logging.info(f"Starting Valuation Process for {stock['fullName']}")
         s = Stock(stock.get("ticker"))
+
         try:
             s.growth_rate()
         except Exception as e:
@@ -64,7 +67,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
         fcf_result = fcf_growth_range(s, req_rate)
         forward_pe_result = forward_pe_range(s, req_rate)
 
-        report_name = f"{s.stock_code}-report.html"
+        report_name = f"{datetime.now().strftime('%Y:%m:%d')}.html"
 
         template = util.get_template("report_template.html")
         template_vars = {"spot_yield": util.convert_to_pct(rf.spot_yield), "market_ann_return": util.convert_to_pct( market.get_annualised_return(rf.year)), "benchmark_year": rf.year, "req_rate": util.convert_to_pct(req_rate),
@@ -77,7 +80,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
         util.dump_report(html_out, f"/tmp/{report_name}")
         logging.debug("Created report file")
 
-        util.upload_report_to_s3("/tmp/" + report_name, s3_bucket, s3_report_dir + "/" + report_name)
+        util.upload_report_to_s3("/tmp/" + report_name, s3_bucket, s3_report_dir + "/" + s.stock_code + "/" +report_name)
 
 
 #TODO:

@@ -4,7 +4,7 @@ from quantifin.util import RiskFree
 from quantifin.util.markets import Market
 from quantifin.equity.valuation import *
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from util import convert_to_pct
 
 def gordon_growth(stock, req_return, growth_rate, factor):
@@ -88,7 +88,7 @@ def forward_pe_calc(avg_payout_ratio, req_rate, growth_rate, eps, factor):
     try:
         value = forward_pe(avg_payout_ratio, growth_rate, req_rate, eps)
         result.append(("Valuation", value))
-    except ValueError as e:
+    except (ValueError, Warning) as e:
         result.append(("Valuation Error", str(e)))
         logging.debug(f"Error calculating FCF growth: {str(e)}")
     return result
@@ -100,8 +100,9 @@ def __first_item_in_dict(d):
 def get_greeks(s, market, rf):
     logging.debug("Calculating Greeks")
     end = datetime.now()
+    end = datetime.now() - timedelta(days=1)
     end_string = end.strftime("%Y-%m-%d")
-    start = datetime(end.year - 1, end.month, end.day)
+    start = end - timedelta(weeks=52)
     start_string = start.strftime("%Y-%m-%d")  
     logging.debug(f"Calculating greeks using data from {start_string} to {end_string}")
 
@@ -113,9 +114,14 @@ def get_greeks(s, market, rf):
         rf_history = rf.yield_history(start_string, end_string, "monthly")
         sortino = s.get_sortino_ratio(start_string, end_string, "monthly", rf_history)
         sharpe = s.get_sharpe_ratio_ex_post(start_string, end_string, "monthly", rf_history)
-    cv = s.get_coefficient_of_variation(1, "monthly")
-    market_one_year_return = market.get_annualised_return(1)
-    alpha = s.get_alpha(1, market_one_year_return, rf_history[0])
+    try:
+        cv = s.get_coefficient_of_variation(1, "daily")
+        market_one_year_return = market.get_annualised_return(1)
+        alpha = s.get_alpha(1, market_one_year_return, rf_history[0])
+    except TypeError as e:
+        logging.error("Failed to calculate coefficient of variation")
+        cv = "N/A"
+        alpha = "N/A"
     return {"sortino": sortino, "sharpe": sharpe, "cv": cv, "alpha": alpha}
 
 
