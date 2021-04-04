@@ -89,8 +89,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
         util.update_valuation(db, s.stock_code, util.Valuation.GORDON_GROWTH.value, util.extract_valuation(gg_result))
         util.update_valuation(db, s.stock_code, util.Valuation.FCF_GROWTH.value, util.extract_valuation(fcf_result))
         util.update_valuation(db, s.stock_code, util.Valuation.FORWARD_PE.value, util.extract_valuation(forward_pe_result))
-
-
+log.info("FINISHED COMPUTATION")
 
 
 

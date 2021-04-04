@@ -34,6 +34,8 @@ def gordon_growth_range(s, req_rate):
     return result
 
 def fcf_growth_range(s,req_rate):
+    if req_rate < 0:
+        req_rate = 0.05
     logging.debug("Calculating FCF Growth")
     result = dict()
     result["req_rate"] =  convert_to_pct(req_rate)
@@ -46,8 +48,6 @@ def fcf_growth_range(s,req_rate):
     return result
 
 def fcf_growth(s, req_rate, factor, no_shares):
-    if req_rate < 0:
-        req_rate = 0.05
     result = list()
     fcf = s.get_fcf_history()
     result.append(("Assumption", f"Using a factor of {factor} to scale FCF growth rate of {convert_to_pct(s.fcf_growth_rate())}%"))
@@ -67,7 +67,7 @@ def forward_pe_range(s, req_rate):
     result = dict()
     result["req_rate"] = req_rate
     growth_rate = s.growth_rate()
-    result['growth_rate'] = growth_rate
+    result['growth_rate'] = convert_to_pct(growth_rate)
     ratio_hist = s.get_dividend_payout_ratio_history()
     result['ratio_hist'] = ratio_hist
     payout = s.average_dividend_payout_ratio(ratio_hist)
