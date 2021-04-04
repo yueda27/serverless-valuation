@@ -5,7 +5,8 @@ from quantifin.util.markets import Market
 from quantifin.equity.valuation import *
 import logging
 from datetime import datetime, timedelta
-from util import convert_to_pct
+from util import convert_to_pct, value_classification
+
 
 def gordon_growth(stock, req_return, growth_rate, factor):
     if req_return < 0:
@@ -27,9 +28,9 @@ def gordon_growth(stock, req_return, growth_rate, factor):
 def gordon_growth_range(s, req_rate):
     result = dict()
     growth_rate = s.growth_rate()
-    result["normal"] = gordon_growth(s, req_rate, growth_rate, 1)
-    result["conservative"] = gordon_growth(s, req_rate, growth_rate, 0.5)
-    result["optimistic"] = gordon_growth(s, req_rate, growth_rate, 1.2)
+    result[value_classification.NORMAL.value] = gordon_growth(s, req_rate, growth_rate, 1)
+    result[value_classification.CONSERVATIVE.value] = gordon_growth(s, req_rate, growth_rate, 0.5)
+    result[value_classification.OPTIMISTIC.value] = gordon_growth(s, req_rate, growth_rate, 1.2)
     return result
 
 def fcf_growth_range(s,req_rate):
@@ -39,9 +40,9 @@ def fcf_growth_range(s,req_rate):
     result["fcf_history"] = s.get_fcf_history()
     no_shares = s.get_num_shares_outstanding()
     result["no_shares"] = no_shares
-    result["normal"] = fcf_growth(s, req_rate, 0.1, no_shares)
-    result["optimistic"] =  fcf_growth(s, req_rate, 0.3, no_shares)
-    result["conservative"] =  fcf_growth(s, req_rate, 0.05, no_shares)
+    result[value_classification.NORMAL.value] = fcf_growth(s, req_rate, 0.1, no_shares)
+    result[value_classification.OPTIMISTIC.value] =  fcf_growth(s, req_rate, 0.3, no_shares)
+    result[value_classification.CONSERVATIVE.value] =  fcf_growth(s, req_rate, 0.05, no_shares)
     return result
 
 def fcf_growth(s, req_rate, factor, no_shares):
@@ -73,9 +74,9 @@ def forward_pe_range(s, req_rate):
     result['payout'] = payout
     eps = s.get_key_statistics_data()[s.stock_code]['trailingEps']
     result['eps'] = eps
-    result['normal'] = forward_pe_calc(payout, req_rate, growth_rate, eps, 1)
-    result['conservative'] = forward_pe_calc(payout, req_rate, growth_rate, eps, 0.5)
-    result['optimistic'] = forward_pe_calc(payout, req_rate, growth_rate, eps, 1.2)
+    result[value_classification.NORMAL.value] = forward_pe_calc(payout, req_rate, growth_rate, eps, 1)
+    result[value_classification.CONSERVATIVE.value] = forward_pe_calc(payout, req_rate, growth_rate, eps, 0.5)
+    result[value_classification.OPTIMISTIC.value] = forward_pe_calc(payout, req_rate, growth_rate, eps, 1.2)
     return result
 
 def forward_pe_calc(avg_payout_ratio, req_rate, growth_rate, eps, factor):

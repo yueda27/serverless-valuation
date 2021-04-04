@@ -1,5 +1,6 @@
 import os
 from boto3 import client, resource
+from botocore.exceptions import ClientError
 import yaml
 from jinja2 import Environment, FileSystemLoader
 import logging
@@ -7,6 +8,19 @@ from finnhub import Client
 from functools import total_ordering
 import heapq
 import copy
+from enum import Enum
+from datetime import datetime
+from decimal import Decimal
+
+class value_classification(Enum):
+    NORMAL="normal"
+    CONSERVATIVE = "conservative"
+    OPTIMISTIC = "optimistic"
+
+class Valuation(Enum):
+    GORDON_GROWTH = "gordon_growth"
+    FCF_GROWTH = "fcf_growth"
+    FORWARD_PE = "forward_pe"
 
 def get_template(template_path):
     env = Environment(loader=FileSystemLoader('.'))
@@ -53,6 +67,33 @@ def login_db(table_name):
         raise Exception(f"Failed to connect to database: {str(e)}")
     logging.info(f"Successfully connected to database table:{table_name} ")
     return table
+
+
+def update_valuation(table, ticker, valuation_type, result):
+    result = dict_value_to_dicimal(result)
+    response = table.update_item(
+       Key={"ticker": ticker},
+       UpdateExpression = f"set #valuation = :attrVal, lastUpdated = :today",
+       ExpressionAttributeNames = {
+           "#valuation": valuation_type
+       },
+       ExpressionAttributeValues = {
+           ":attrVal" : {
+               value_classification.NORMAL.value: result.get(value_classification.NORMAL.value),
+               value_classification.OPTIMISTIC.value: result.get(value_classification.OPTIMISTIC.value),
+               value_classification.CONSERVATIVE.value: result.get(value_classification.CONSERVATIVE.value),
+           },
+           ":today": today_date()
+       },
+       ReturnValues = "UPDATED_NEW")
+    status_code = response["ResponseMetadata"]["HTTPStatusCode"] 
+    logging.info(f"Updated {ticker} with return code of {status_code}")
+    return response
+
+def dict_value_to_dicimal(d):
+    return {k: Decimal(str(v)) for k, v in d.items()}
+def today_date():
+    return datetime.now().strftime("%Y-%m-%d")
 
 def rank_list_by_attr(table, attr, limit, max = True):
     result, resp = initialise_query_result(table, limit)
@@ -116,7 +157,20 @@ class CompareDict(dict):
             return self.get(self.key) < other.get(self.key)
         return self.get(self.key) > other.get(self.key)
 
+def extract_valuation(result):
+    final = dict()
+    for classification in value_classification:
+        calculation = result[classification.value][-1]
+        if calculation[0] == "Valuation":
+            final[classification.value] = calculation[1]
+        else:
+            final[classification.value] = 0 
+    return final
+
 #TODO:
 # get most outdated stock from dynamodb to run valuation
 # generic function to get list of stocks based on key
 # dyanamodb client get
+if __name__ == "__main__":
+    table = login_db("testing-table")
+    create_top_level_index(table, "1A1.SI", 'testing.down.var')
