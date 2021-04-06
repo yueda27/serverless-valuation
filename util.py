@@ -34,9 +34,8 @@ def upload_report_to_s3(file_name, bucket, object_name=None):
     if object_name is None:
         object_name = file_name
     s3_client = client("s3")
-    print(s3_client.list_objects(Bucket= bucket))
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
+        response = s3_client.upload_file(file_name, bucket, object_name, ExtraArgs={"ContentType" :"text/html"})
     except:
         print("ERROR UPLOADING!")
     logging.debug(f"Uploaded {file_name} to S3://{bucket}/{object_name}")
