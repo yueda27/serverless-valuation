@@ -50,8 +50,13 @@ def fcf_growth_range(s,req_rate):
 def fcf_growth(s, req_rate, factor, no_shares):
     result = list()
     fcf = s.get_fcf_history()
-    result.append(("Assumption", f"Using a factor of {factor} to scale FCF growth rate of {convert_to_pct(s.fcf_growth_rate())}%"))
-    fcf_growth=s.fcf_growth_rate()*factor
+    try: 
+        fcf_growth = s.fcf_growth_rate()
+    except Exception:
+        fcf_growth = 0
+    result.append(("Assumption", f"Using a factor of {factor} to scale FCF growth rate of {convert_to_pct(fcf_growth)}%"))
+
+    fcf_growth = fcf_growth * factor
     result.append(("FCF Growth Rate", f"{convert_to_pct(fcf_growth)}%"))
     logging.debug(f"req_rate = {req_rate} growth_rate= {fcf_growth}")
     try:
