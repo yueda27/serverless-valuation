@@ -46,7 +46,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
 
     stocks = util.rank_list_by_attr(db, "lastUpdated", 20, max=False)
 
-    rf = RiskFree(10)
+    rf = RiskFree(5)
     for stock in stocks:
         logging.info(f"Starting Valuation Process for {stock['fullName']}")
         s = Stock(stock.get("ticker"))
@@ -63,34 +63,41 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
         ann_market_return = market.get_annualised_return(rf.year)
 
         req_rate = CAPM(rf.spot_yield, ann_market_return, s.beta)
-        greeks = get_greeks(s, market, rf)
+        try:
+            greeks = get_greeks(s, market, rf)
 
-        gg_result = gordon_growth_range(s, req_rate)
-        fcf_result = fcf_growth_range(s, req_rate)
-        forward_pe_result = forward_pe_range(s, req_rate)
+            gg_result = gordon_growth_range(s, req_rate)
+            fcf_result = fcf_growth_range(s, req_rate)
+            forward_pe_result = forward_pe_range(s, req_rate)
 
-        report_name = f"{util.today_date()}.html"
+            report_name = f"{util.today_date()}.html"
 
-        template = util.get_template("report_template.html")
-        template_vars = {"spot_yield": util.convert_to_pct(rf.spot_yield), "market_ann_return": util.convert_to_pct( market.get_annualised_return(rf.year)), "benchmark_year": rf.year, "req_rate": util.convert_to_pct(req_rate),
-                        "greeks": greeks, "gordon_growth": gg_result, "fcf_growth": fcf_result, "forward_pe": forward_pe_result,
-                        "timestamp": util.today_date()}
+            template = util.get_template("report_template.html")
+            template_vars = {"spot_yield": util.convert_to_pct(rf.spot_yield), "market_ann_return": util.convert_to_pct( market.get_annualised_return(rf.year)), "benchmark_year": rf.year, "req_rate": util.convert_to_pct(req_rate),
+                            "greeks": greeks, "gordon_growth": gg_result, "fcf_growth": fcf_result, "forward_pe": forward_pe_result,
+                            "timestamp": util.today_date()}
 
-        html_out = template.render(template_vars, s = s)
-        logging.debug("Generated report file")
+            html_out = template.render(template_vars, s = s)
+            logging.debug("Generated report file")
 
-        util.dump_report(html_out, f"/tmp/{report_name}")
-        logging.debug("Created report file")
+            util.dump_report(html_out, f"/tmp/{report_name}")
+            logging.debug("Created report file")
 
-        util.upload_report_to_s3("/tmp/" + report_name, s3_bucket, s3_report_dir + "/" + s.stock_code + "/" +report_name)
+            util.upload_report_to_s3("/tmp/" + report_name, s3_bucket, s3_report_dir + "/" + s.stock_code + "/" +report_name)
 
-        db.update_item(Key={"ticker": s.stock_code}, UpdateExpression = f"set price = :price", 
-            ExpressionAttributeValues = {":price": Decimal(str(s.get_current_price()))})
-        util.update_valuation(db, s.stock_code, util.Valuation.GORDON_GROWTH.value, util.extract_valuation(gg_result))
-        util.update_valuation(db, s.stock_code, util.Valuation.FCF_GROWTH.value, util.extract_valuation(fcf_result))
-        util.update_valuation(db, s.stock_code, util.Valuation.FORWARD_PE.value, util.extract_valuation(forward_pe_result))
-log.info("FINISHED COMPUTATION")
-
+            db.update_item(Key={"ticker": s.stock_code}, UpdateExpression = f"set price = :price", 
+                ExpressionAttributeValues = {":price": Decimal(str(s.get_current_price()))})
+            util.update_valuation(db, s.stock_code, util.Valuation.GORDON_GROWTH.value, util.extract_valuation(gg_result))
+            util.update_valuation(db, s.stock_code, util.Valuation.FCF_GROWTH.value, util.extract_valuation(fcf_result))
+            util.update_valuation(db, s.stock_code, util.Valuation.FORWARD_PE.value, util.extract_valuation(forward_pe_result))
+        except Exception as e:
+            logging.error(f"ERROR: {str(e)}")
+            db.update_item(Key={"ticker": s.stock_code}, UpdateExpression=f"set lastUpdated = :date",
+            ExpressionAttributeValues = {":date": util.today_date()})
+log.info("FINISHED COMPUTATION"
+return {
+        'statusCode': 200
+    }
 
 
 #TODO:
