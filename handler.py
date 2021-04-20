@@ -94,10 +94,7 @@ Using following configurations: S3 Bucket: {s3_bucket}  S3 Report Dir: {s3_repor
             logging.error(f"ERROR: {str(e)}")
             db.update_item(Key={"ticker": s.stock_code}, UpdateExpression=f"set lastUpdated = :date",
             ExpressionAttributeValues = {":date": util.today_date()})
-log.info("FINISHED COMPUTATION"
-return {
-        'statusCode': 200
-    }
+    logging.info("FINISHED COMPUTATION")
 
 
 #TODO:
